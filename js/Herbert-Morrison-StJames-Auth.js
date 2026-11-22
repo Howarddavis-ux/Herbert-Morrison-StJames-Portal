@@ -21,6 +21,10 @@ const STORAGE = {
         }catch(error){
             console.error("Failed to store: " + error);
         }
+    },
+
+    remove:function(storageKey){
+        //used for log out
     }
 };
 
@@ -33,7 +37,7 @@ function createUser(id, email, password, role, status = "active"){
         password: password,
         role: role,
         status: status,
-    };
+    };//Can add that when user is created to adds to arr
 }
 
 function initTestStorage(){
@@ -105,6 +109,7 @@ function login(email, password) {
         const user = findUser(validInput(login));
         checkStatus(user);
         checkRole(user);
+        STORAGE.store('CurrentUser', user);//can delete when logging out
 
         outElement.innerHTML = `Welcome back`;
         errorElement.innerHTML = '';
