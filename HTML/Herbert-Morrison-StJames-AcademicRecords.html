@@ -30,7 +30,7 @@
                 <a href="Herbert-Morrison-StJames-StudentRegistration.html">Student Registration</a>
                 <a href="Herbert-Morrison-StJames-AcademicRecords.html">Academic Records</a>
                 <a href="Herbert-Morrison-StJames-Report.html">Financial Ledger</a>
-                <a href="Herbert-Morrison-StJames-Login.html">Logout</a>
+                <a href="#" id="logoutLink">Logout</a>
             </nav>
         </div>
     </header>
@@ -242,6 +242,12 @@
         }
 
         document.getElementById("filterTerm").addEventListener("change", displayRecords);
+
+        document.getElementById('logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('CurrentUser');
+            window.location.href = 'Herbert-Morrison-StJames-Login.html';
+        });
 
         displayRecords();
     </script>

@@ -5,6 +5,13 @@
     Jason Reid       - 2509405
     Alyesha Hayles   - 2507383
 */
+
+// Redirect to login if not authenticated
+var _authUser = (function() {
+    try { return JSON.parse(sessionStorage.getItem("CurrentUser")); } catch(e) { return null; }
+})();
+if (!_authUser) window.location.href = "Herbert-Morrison-StJames-Login.html";
+
 const subjectFilter      = document.getElementById('subjectFilter');
 const gradeSection       = document.getElementById('gradeSection');
 const metricsSection     = document.getElementById('metricsSection');

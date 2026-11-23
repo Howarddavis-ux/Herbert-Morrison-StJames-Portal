@@ -28,7 +28,7 @@
                 <a href="Herbert-Morrison-StJames-StudentRegistration.html">Student Registration</a>
                 <a href="Herbert-Morrison-StJames-AcademicRecords.html">Academic Records</a>
                 <a href="Herbert-Morrison-StJames-Report.html">Financial Ledger</a>
-                <a href="Herbert-Morrison-StJames-Login.html">Logout</a>
+                <a href="#" id="logoutLink">Logout</a>
             </nav>
         </div>
     </header>
@@ -123,6 +123,12 @@
     </footer>
 
     <script>
+        // Auth check — admin only
+        var _auth = (function() {
+            try { return JSON.parse(sessionStorage.getItem("CurrentUser")); } catch(e) { return null; }
+        })();
+        if (!_auth || _auth.role !== 'admin') window.location.href = 'Herbert-Morrison-StJames-Login.html';
+
         const registeredStudents = JSON.parse(localStorage.getItem("registeredStudents")) || [];
         const registerForm   = document.getElementById("registerStudentForm");
         const tableBody      = document.getElementById("studentTableBody");
@@ -256,6 +262,12 @@
 
         cancelEditBtn.addEventListener("click", resetForm);
         document.getElementById("filterTerm").addEventListener("change", displayStudents);
+
+        document.getElementById('logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('CurrentUser');
+            window.location.href = 'Herbert-Morrison-StJames-Login.html';
+        });
 
         displayStudents();
     </script>

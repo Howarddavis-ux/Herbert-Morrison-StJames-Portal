@@ -1,16 +1,16 @@
 <!--
-    Group Members:
-    Howard Davis    - 2501971 - Monday 3pm-5pm
-    Abigail Williams - 2404730 - Monday 3pm-5pm
-    Jason Reid      - 2509405 - Monday 3pm-5pm
-    Alyesha Hayles  - 2507383 - Monday 3pm-5pm
+    Group Members (Monday 3pm - 5pm):
+    Howard Davis     - 2501971
+    Abigail Williams - 2404730
+    Jason Reid       - 2509405
+    Alyesha Hayles   - 2507383
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instructor Workflow - CIT2011</title>
+    <title>Instructor Dashboard | Herbert Morrison Technical High School</title>
     <link rel="stylesheet" href="../style/Herbert-Morrison-StJames-Main.css">
 </head>
 <body>
@@ -22,10 +22,15 @@
                 <span>Instructor Dashboard</span>
             </div>
             <nav class="site-nav">
-                <a href="Herbert-Morrison-StJames-Login.html">Logout</a>
+                <a href="#" id="logoutLink">Logout</a>
             </nav>
         </div>
     </header>
+
+    <div class="page-banner">
+        <h1>Instructor Dashboard</h1>
+        <p>Enter and manage student grades by subject.</p>
+    </div>
 
     <main>
         <!-- 1. Subject Routing Dropdown Filter -->
@@ -82,6 +87,17 @@
         </section>
     </main>
 
+    <footer>
+        <p>&copy; 2026 Herbert Morrison Technical High School St. James, Jamaica</p>
+    </footer>
+
     <script src="../js/Herbert-Morrison-StJames-Instructor.js"></script>
+    <script>
+        document.getElementById('logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('CurrentUser');
+            window.location.href = 'Herbert-Morrison-StJames-Login.html';
+        });
+    </script>
 </body>
 </html>
