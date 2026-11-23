@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewer Portal | Herbert Morrison Technical High School</title>
+    <link rel="stylesheet" href="../style/main.css">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="school-name">
+                Herbert Morrison Technical High School
+                <span>Reviewer Portal</span>
+            </div>
+            <nav class="site-nav">
+                <a href="Academicrecords.html">Academic Records</a>
+                <a href="report.html">Financial Ledger</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-banner">
+        <h1>Reviewer Dashboard</h1>
+        <p>Read-only access to academic and financial records.</p>
+    </div>
+
+    <main>
+        <section>
+            <h2>Available Reports</h2>
+            <p>As a reviewer, you have read-only access to the sections below. No data can be added, edited, or deleted.</p>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Academic Records</h3>
+                    <p>View all student grades across every subject as submitted by teachers.</p>
+                    <a href="Academicrecords.html" class="btn">View</a>
+                </div>
+                <div class="card">
+                    <h3>Financial Ledger</h3>
+                    <p>View student tuition balances, payment statuses, and transaction statements.</p>
+                    <a href="report.html" class="btn">View</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Herbert Morrison Technical High School St. James, Jamaica</p>
+    </footer>
+
+    <script>
+        var stored = sessionStorage.getItem('CurrentUser');
+        if (!stored) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('logoutLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            sessionStorage.removeItem('CurrentUser');
+            window.location.href = 'login.html';
+        });
+    </script>
+
+</body>
+</html>

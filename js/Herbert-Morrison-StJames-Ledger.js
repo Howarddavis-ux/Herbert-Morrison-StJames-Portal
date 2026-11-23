@@ -1,207 +1,151 @@
-const TRANSACTION_KEY = "transactions";
-const STUDENT_KEY = "student";
-const LEDGER_KEY =  "ledger";
+const TRANSACTION_KEY  = "transactions";
+const LEDGER_KEY       = "ledger";
 const CURRENT_USER_KEY = "CurrentUser";
+const LOGIN_PAGE       = "login.html";
+const DEFAULT_TUITION  = 150000;
 
-//Storage
 const STORAGE = {
-    get:function(storageKey){
-        try{
+    get: function(storageKey) {
+        try {
             const json = localStorage.getItem(storageKey);
             if (!json) return [];
-
-            const arr = JSON.parse(json);
-            return arr;
-        }catch (error){
-            console.error("Cannot retrieve from STORAGE:" + error);
+            return JSON.parse(json);
+        } catch(error) {
+            console.error("Cannot retrieve from STORAGE: " + error);
             return [];
         }
     },
-
-    store:function(storageKey, value){
-        try{
+    store: function(storageKey, value) {
+        try {
             localStorage.setItem(storageKey, JSON.stringify(value));
-        }catch(error){
+        } catch(error) {
             console.error("Failed to store: " + error);
         }
     }
 };
 
-//Database
-function createStudent(id, firstName, lastName, age, grade, term = "summer"){
-    return {
-        id: id,
-        firstName: firstName,
-        lastName: lastName,
-        age: age,
-        grade: grade,
-        term: term
-    };
-}
-function createLedger(studentId, tuition, amountPaid){
-    return {
-        studentId: studentId,
-        tuition: tuition,
-        amountPaid: amountPaid,
-    };
-}
-function createUser(id, email, password, role, status = "active"){
-    return {
-        id: id,
-        email: email,
-        password: password,
-        role: role,
-        status: status,
-    };//Can add that when user is created to adds to arr
-}
-function initTestStorage() {
-    const testStudents = [
-        createStudent(101, "Maya", "Campbell", 14, 9, "summer"),
-        createStudent(102, "Devon", "Brown", 16, 11, "fall"),
-        createStudent(103, "Tariq", "Williams", 12, 7),
-    ];
-
-    const testLedgers = [
-        createLedger(101, 1500, 1500),
-        createLedger(102, 1800, 900),
-        createLedger(103, 1400, 500),
-    ];
-    const CURRENT_USER = [ createUser(1, "admin@example.com", "admin123", "admin")];
-    STORAGE.store(STUDENT_KEY, testStudents);
-    STORAGE.store(LEDGER_KEY, testLedgers);
-    STORAGE.store(CURRENT_USER_KEY, CURRENT_USER);
-}
-
-initTestStorage();
-
-//Finance
-function getStatus(entry){
-    if(entry.amountPaid >= entry.tuition){
-        return "Paid";
+// CurrentUser is stored in sessionStorage by auth.js
+function getCurrentUser() {
+    try {
+        const json = sessionStorage.getItem(CURRENT_USER_KEY);
+        return json ? JSON.parse(json) : null;
+    } catch(e) {
+        return null;
     }
-    if (entry.amountPaid > 0) {
-        return "Pending";
-    }
+}
+
+// Students come from the admin registration form
+function getRegisteredStudents() {
+    const json = localStorage.getItem("registeredStudents");
+    return json ? JSON.parse(json) : [];
+}
+
+function logout() {
+    sessionStorage.removeItem(CURRENT_USER_KEY);
+    window.location.href = LOGIN_PAGE;
+}
+
+// Finance
+function getStatus(entry) {
+    if (entry.amountPaid >= entry.tuition && entry.tuition > 0) return "Paid";
+    if (entry.amountPaid > 0) return "Pending";
     return "Outstanding";
 }
 
 function calBalance(entry) {
     return entry.tuition - entry.amountPaid;
 }
-function getLedgerRecords(){
-    const students = STORAGE.get(STUDENT_KEY);
-    const ledger = STORAGE.get(LEDGER_KEY);
-    const concatArr = [];
 
-    for(let i = 0; i < students.length; i++){
+function getLedgerRecords() {
+    const students = getRegisteredStudents();
+    const ledger   = STORAGE.get(LEDGER_KEY);
+    const records  = [];
+
+    for (let i = 0; i < students.length; i++) {
         const student = students[i];
-        const entry = ledger.find(en => en.studentId === student.id);
+        let entry = ledger.find(function(en) {
+            return String(en.studentId) === String(student.studentID);
+        });
 
-        concatArr.push({
-            studentId: student.id,
-            name: student.firstName + " " + student.lastName,
-            grade: student.grade,
-            term: student.term,
-            tuition: entry.tuition,
+        // Create a default entry if the student has no ledger record yet
+        if (!entry) {
+            entry = { studentId: student.studentID, tuition: DEFAULT_TUITION, amountPaid: 0 };
+            ledger.push(entry);
+            STORAGE.store(LEDGER_KEY, ledger);
+        }
+
+        records.push({
+            studentId:  student.studentID,
+            name:       student.studentfName + " " + student.studentlName,
+            grade:      student.studentClass,
+            term:       student.Term,
+            tuition:    entry.tuition,
             amountPaid: entry.amountPaid,
-            balance: calBalance(entry),
-            status: getStatus(entry)
+            balance:    calBalance(entry),
+            status:     getStatus(entry)
         });
     }
-    return concatArr;
+    return records;
 }
 
-function getStudentTransactions(studentId){
+function getStudentTransactions(studentId) {
     const arr = STORAGE.get(TRANSACTION_KEY);
-    return arr.filter(function (entry){
-        return entry.studenId === studentId;
+    return arr.filter(function(entry) {
+        return String(entry.studentId) === String(studentId);
     });
 }
 
-function getLedgerStats(records){
+function getLedgerStats(records) {
     const totals = {
-        tuition: 0,
-        collected: 0,
-        owing: 0, 
-        paidCount: 0,
-        pendingCount: 0,
-        outstandingCount: 0,
+        tuition: 0, collected: 0, owing: 0,
+        paidCount: 0, pendingCount: 0, outstandingCount: 0
     };
-
-    for(let i = 0; i < records.length; i++){
-        totals.tuition += records[i].tuition;
+    for (let i = 0; i < records.length; i++) {
+        totals.tuition   += records[i].tuition;
         totals.collected += records[i].amountPaid;
-        totals.owing += records[i].balance;
-        if (records[i].status === "Paid") {
-            totals.paidCount++;
-        } else if (records[i].status === "Pending") {
-            totals.pendingCount++;
-        } else {
-            totals.outstandingCount++;
-        }
+        totals.owing     += records[i].balance;
+        if      (records[i].status === "Paid")    totals.paidCount++;
+        else if (records[i].status === "Pending") totals.pendingCount++;
+        else                                       totals.outstandingCount++;
     }
     return totals;
 }
 
-function checkPayment(studentId, amount){
-    const arr  = STORAGE.get(LEDGER_KEY);
-    const entry =  arr.find(entry => entry.studentId === studentId);
-
-    if(!entry){
-        return "Choose a student.";
-    }
-    if(amount <= 0) {
-        return "Enter a amount greater than zero.";
-    }
-    if(amount > calBalance(entry)){
-        return "Payment is greater than owing balance (" + calBalance(entry) + ").";
-    }
+function checkPayment(studentId, amount) {
+    const arr   = STORAGE.get(LEDGER_KEY);
+    const entry = arr.find(function(en) { return String(en.studentId) === String(studentId); });
+    if (!entry)       return "Choose a student.";
+    if (amount <= 0)  return "Enter an amount greater than zero.";
+    if (amount > calBalance(entry)) return "Payment exceeds outstanding balance (" + formatMoney(calBalance(entry)) + ").";
     return "";
-
 }
 
-function recordPayment(studentId, amount, note){
-    const currentUser = STORAGE.get(CURRENT_USER_KEY);
-    if (!currentUser || currentUser[0].role !== "admin"){
-        throw new Error("Only administrators");
-    }
+function recordPayment(studentId, amount, note) {
+    const user = getCurrentUser();
+    if (!user || user.role !== "admin") throw new Error("Only administrators can record payments.");
 
     const error = checkPayment(studentId, amount);
-    if(error !== ""){
-        throw new Error(error);
-    }
+    if (error !== "") throw new Error(error);
 
-    //Adds the amount currently paid to the amount pior
     const ledger = STORAGE.get(LEDGER_KEY);
-    const entry = ledger.find(entry => entry.studentId === studentId);
+    const entry  = ledger.find(function(en) { return String(en.studentId) === String(studentId); });
     entry.amountPaid += amount;
     STORAGE.store(LEDGER_KEY, ledger);
 
     const transactions = STORAGE.get(TRANSACTION_KEY);
     let nextId = 1;
     for (let i = 0; i < transactions.length; i++) {
-        if (transactions[i].id >= nextId) {
-        nextId = transactions[i].id + 1;//Searches for the last ID for transactions
-        }
+        if (transactions[i].id >= nextId) nextId = transactions[i].id + 1;
     }
-    transactions.push({
-        id:nextId,
-        studentId: studentId,
-        amount: amount,
-        note: note.trim()
-    });
+    transactions.push({ id: nextId, studentId: studentId, amount: amount, note: note.trim() });
     STORAGE.store(TRANSACTION_KEY, transactions);
 }
 
-
-
-//Display
-const currentUser = STORAGE.get(CURRENT_USER_KEY);
-
-const ledgerBody = document.getElementById("ledgerBody");
-const searchText = document.getElementById("searchText");
-const filterStatus = document.getElementById("filterStatus");
-const filterGrade = document.getElementById("filterGrade");
+// Display
+const ledgerBody     = document.getElementById("ledgerBody");
+const searchText     = document.getElementById("searchText");
+const filterStatus   = document.getElementById("filterStatus");
+const filterGrade    = document.getElementById("filterGrade");
 const paymentStudent = document.getElementById("paymentStudent");
 
 function formatMoney(amount) {
@@ -209,34 +153,27 @@ function formatMoney(amount) {
 }
 
 function search(records, filters) {
-    const text = filters.text.trim().toLowerCase();
+    const text    = filters.text.trim().toLowerCase();
     const results = [];
-
     for (let i = 0; i < records.length; i++) {
-        const record = records[i];
-        const matchesText = text === "" || String(record.studentId) === text;
+        const record       = records[i];
+        const matchesText   = text === "" || record.name.toLowerCase().includes(text) || String(record.studentId).includes(text);
         const matchesStatus = filters.status === "" || record.status === filters.status;
-        const matchesGrade = filters.grade === "" || record.grade === filters.grade;
-
-        if (matchesText && matchesStatus && matchesGrade) {
-            results.push(record);
-        }
+        const matchesGrade  = filters.grade  === "" || record.grade  === filters.grade;
+        if (matchesText && matchesStatus && matchesGrade) results.push(record);
     }
     return results;
 }
 
 function fillGradeFilter(records) {
-    const grade = [];
+    const grades = [];
     for (let i = 0; i < records.length; i++) {
-        if (grade.indexOf(records[i].grade) === -1) {
-            grade.push(records[i].grade);
-        }
+        if (grades.indexOf(records[i].grade) === -1) grades.push(records[i].grade);
     }
-    grade.sort();
-
-    filterGrade.innerHTML = '<option value="">All grade</option>';
-    for (let i = 0; i < grade.length; i++) {
-        filterGrade.innerHTML += `<option value="${grade[i]}">${grade[i]}</option>`;
+    grades.sort();
+    filterGrade.innerHTML = '<option value="">All grades</option>';
+    for (let i = 0; i < grades.length; i++) {
+        filterGrade.innerHTML += '<option value="' + grades[i] + '">' + grades[i] + '</option>';
     }
 }
 
@@ -244,70 +181,59 @@ function fillPayment(records) {
     paymentStudent.innerHTML = "";
     for (let i = 0; i < records.length; i++) {
         const r = records[i];
-        paymentStudent.innerHTML += `<option value="${r.studentId}">${r.studentId} - ${r.name} (owes ${formatMoney(r.balance)})</option>`;
+        paymentStudent.innerHTML += '<option value="' + r.studentId + '">' + r.studentId + ' - ' + r.name + ' (owes ' + formatMoney(r.balance) + ')</option>';
     }
 }
 
 function generateTable() {
     const filtered = search(getLedgerRecords(), {
-        text: searchText.value,
+        text:   searchText.value,
         status: filterStatus.value,
-        grade: filterGrade.value
+        grade:  filterGrade.value
     });
 
     const totals = getLedgerStats(filtered);
-    document.getElementById("totalTuition").innerHTML = formatMoney(totals.tuition);
+    document.getElementById("totalTuition").innerHTML   = formatMoney(totals.tuition);
     document.getElementById("totalCollected").innerHTML = formatMoney(totals.collected);
-    document.getElementById("totalOwing").innerHTML = formatMoney(totals.owing);
-    document.getElementById("statusCounts").innerHTML = totals.paidCount + " / " + totals.pendingCount + " / " + totals.outstandingCount;
+    document.getElementById("totalOwing").innerHTML     = formatMoney(totals.owing);
+    document.getElementById("statusCounts").innerHTML   = totals.paidCount + " / " + totals.pendingCount + " / " + totals.outstandingCount;
 
     ledgerBody.innerHTML = "";
     for (let i = 0; i < filtered.length; i++) {
-        const record = filtered[i];
-        ledgerBody.innerHTML += `
-            <tr>
-                <td>${record.studentId}</td>
-                <td>${record.name}</td>
-                <td>${record.grade}</td>
-                <td>${formatMoney(record.tuition)}</td>
-                <td>${formatMoney(record.amountPaid)}</td>
-                <td>${formatMoney(record.balance)}</td>
-                <td><span class="badge status-${record.status}">${record.status}</span></td>
-                <td class="no-print"><button type="button" onclick="showStatement(${record.studentId})">View</button></td>
-            </tr>
-        `;
+        const r = filtered[i];
+        ledgerBody.innerHTML +=
+            '<tr>' +
+            '<td>' + r.studentId + '</td>' +
+            '<td>' + r.name + '</td>' +
+            '<td>' + r.grade + '</td>' +
+            '<td>' + formatMoney(r.tuition) + '</td>' +
+            '<td>' + formatMoney(r.amountPaid) + '</td>' +
+            '<td>' + formatMoney(r.balance) + '</td>' +
+            '<td><span class="badge status-' + r.status + '">' + r.status + '</span></td>' +
+            '<td class="no-print"><button type="button" onclick="showStatement(\'' + r.studentId + '\')">View</button></td>' +
+            '</tr>';
     }
-
     document.getElementById("noResults").classList.toggle("hidden", filtered.length > 0);
 }
 
 function showStatement(studentId) {
     const records = getLedgerRecords();
-    let record = null;
-
+    let record    = null;
     for (let i = 0; i < records.length; i++) {
-        if (records[i].studentId === studentId) {
-            record = records[i];
-            break;
-        }
+        if (String(records[i].studentId) === String(studentId)) { record = records[i]; break; }
     }
+    if (!record) return;
 
-    const transactions = getTransactionsForStudent(studentId);
-    const body = document.getElementById("statementBody");
-    body.innerHTML = "";
+    const transactions = getStudentTransactions(studentId);
+    const body         = document.getElementById("statementBody");
+    body.innerHTML     = "";
 
-    document.getElementById("statementTitle").innerHTML = `Statement: ${record.name} (ID ${record.studentId})`;
-    document.getElementById("statementSummary").innerHTML =
-        `Tuition ${formatMoney(record.tuition)} | Paid ${formatMoney(record.amountPaid)} | Balance ${formatMoney(record.balance)} | Status: ${record.status}`;
+    document.getElementById("statementTitle").innerHTML   = "Statement: " + record.name + " (ID " + record.studentId + ")";
+    document.getElementById("statementSummary").innerHTML = "Tuition " + formatMoney(record.tuition) + " | Paid " + formatMoney(record.amountPaid) + " | Balance " + formatMoney(record.balance) + " | Status: " + record.status;
 
     for (let i = 0; i < transactions.length; i++) {
         const t = transactions[i];
-        body.innerHTML += `
-            <tr>
-                <td>${formatMoney(t.amount)}</td>
-                <td>${t.note}</td>
-            </tr>
-        `;
+        body.innerHTML += '<tr><td>' + formatMoney(t.amount) + '</td><td>' + t.note + '</td></tr>';
     }
 
     document.getElementById("statementEmpty").classList.toggle("hidden", transactions.length > 0);
@@ -315,47 +241,55 @@ function showStatement(studentId) {
 }
 
 function recordNewPayment() {
-    const message = document.getElementById("paymentMessage");
+    const message     = document.getElementById("paymentMessage");
     const amountInput = document.getElementById("paymentAmount");
-    const noteInput = document.getElementById("paymentNote");
-
+    const noteInput   = document.getElementById("paymentNote");
     try {
-        recordPayment(Number(paymentStudent.value), parseFloat(amountInput.value), noteInput.value);
+        recordPayment(paymentStudent.value, parseFloat(amountInput.value), noteInput.value);
         message.innerHTML = "Payment recorded.";
         message.className = "message success";
         amountInput.value = "";
-        noteInput.value = "";
+        noteInput.value   = "";
         fillPayment(getLedgerRecords());
         generateTable();
-    } catch (error) {
+    } catch(error) {
         message.innerHTML = error.message;
         message.className = "message error";
     }
 }
 
-function handleLogout() {
-    logout();
-    window.location.href = LOGIN_PAGE;
-}
-
-
-searchText.addEventListener("input", generateTable);//change while typing
+searchText.addEventListener("input",    generateTable);
 filterStatus.addEventListener("change", generateTable);
-filterGrade.addEventListener("change", generateTable);
+filterGrade.addEventListener("change",  generateTable);
 
 document.getElementById("paymentButton").addEventListener("click", recordNewPayment);
-document.getElementById("logoutButton").addEventListener("click", handleLogout);
+document.getElementById("logoutButton").addEventListener("click",  logout);
+document.getElementById("printLedgerButton").addEventListener("click", function() { window.print(); });
+document.getElementById("printStatementButton").addEventListener("click", function() {
+    document.body.classList.add("print-statement");
+    window.print();
+});
+document.getElementById("closeStatementButton").addEventListener("click", function() {
+    document.getElementById("statementSection").classList.add("hidden");
+});
 
-window.addEventListener("afterprint", function () {
+window.addEventListener("afterprint", function() {
     document.body.classList.remove("print-statement");
 });
 
-if (currentUser) {
+// Redirect to login if not authenticated
+const currentUser = getCurrentUser();
+if (!currentUser) {
+    window.location.href = LOGIN_PAGE;
+} else {
     const records = getLedgerRecords();
     fillGradeFilter(records);
-    if (currentUser[0].role === "admin") {
+    if (currentUser.role === "admin") {
         document.getElementById("paymentSection").classList.remove("hidden");
         fillPayment(records);
+    } else {
+        var srLink = document.querySelector('a[href="StudentRegistration.html"]');
+        if (srLink) srLink.style.display = 'none';
     }
     generateTable();
 }

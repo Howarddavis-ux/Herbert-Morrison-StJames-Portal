@@ -1,0 +1,257 @@
+<!--====Alyesha Hayles
+ 2507383
+===-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration | Administrator Dashboard</title>
+    <link rel="stylesheet" href="../style/main.css">
+    <style>
+        section { border: 1px solid var(--red); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="school-name">
+                Herbert Morrison Technical High School
+                <span>Administrator Dashboard</span>
+            </div>
+            <nav class="site-nav">
+                <a href="StudentRegistration.html">Student Registration</a>
+                <a href="Academicrecords.html">Academic Records</a>
+                <a href="report.html">Financial Ledger</a>
+                <a href="login.html">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-banner">
+        <h1>Student Registration</h1>
+        <p>Register and manage student accounts.</p>
+    </div>
+
+    <main>
+        <section>
+            <h3 id="formHeading">Register New Student</h3>
+            <form id="registerStudentForm">
+                <fieldset style="border: none; padding: 0;">
+                    <legend style="font-weight: bold; margin-bottom: 12px;">Student Details</legend>
+
+                    <div class="form-group">
+                        <label for="studentfName">First Name:</label>
+                        <input type="text" id="studentfName" name="studentfName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentlName">Last Name:</label>
+                        <input type="text" id="studentlName" name="studentlName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentAge">Age:</label>
+                        <input type="number" id="studentAge" name="studentAge" min="1" style="width:100px;" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentID">Student ID:</label>
+                        <input type="text" id="studentID" name="studentID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="studentClass">Class:</label>
+                        <select id="studentClass" name="studentClass" required>
+                            <option value="">Select Class</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11">Class 11</option>
+                            <option value="Class 12">Class 12</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Term">Term:</label>
+                        <select id="Term" name="Term" required>
+                            <option value="">Select Term</option>
+                            <option value="Term 1">Term 1</option>
+                            <option value="Term 2">Term 2</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn">Register Student</button>
+                    <button type="button" id="cancelEditBtn" class="btn" style="margin-left: 8px; background: var(--muted);" hidden>Cancel Edit</button>
+                </fieldset>
+            </form>
+            <p id="successMessage" style="color: var(--green); font-weight: bold; margin-top: 10px;"></p>
+        </section>
+
+        <section>
+            <h3>Registered Students</h3>
+            <div class="form-group">
+                <label for="filterTerm">Filter by Term:</label>
+                <select id="filterTerm" style="width: auto;">
+                    <option value="all">All Terms</option>
+                    <option value="Term 1">Term 1</option>
+                    <option value="Term 2">Term 2</option>
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Student ID</th>
+                        <th>Age</th>
+                        <th>Class</th>
+                        <th>Term</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Herbert Morrison Technical High School St. James, Jamaica</p>
+    </footer>
+
+    <script>
+        const registeredStudents = JSON.parse(localStorage.getItem("registeredStudents")) || [];
+        const registerForm   = document.getElementById("registerStudentForm");
+        const tableBody      = document.getElementById("studentTableBody");
+        const successMessage = document.getElementById("successMessage");
+        const formHeading    = document.getElementById("formHeading");
+        const submitBtn      = document.getElementById("submitBtn");
+        const cancelEditBtn  = document.getElementById("cancelEditBtn");
+
+        let editingStudentID = null;
+
+        function displayStudents() {
+            const termFilter = document.getElementById("filterTerm").value;
+            tableBody.innerHTML = "";
+
+            registeredStudents.forEach(function(student) {
+                if (termFilter !== "all" && student.Term !== termFilter) return;
+
+                const row = document.createElement("tr");
+                [student.studentfName, student.studentlName, student.studentID, student.studentAge, student.studentClass, student.Term].forEach(function(detail) {
+                    const cell = document.createElement("td");
+                    cell.textContent = detail;
+                    row.appendChild(cell);
+                });
+
+                const actionsCell  = document.createElement("td");
+                const editButton   = document.createElement("button");
+                const deleteButton = document.createElement("button");
+
+                editButton.textContent   = "Edit";
+                editButton.className     = "btn";
+                editButton.style.marginRight = "6px";
+                editButton.onclick = function() { handleEditClick(student.studentID); };
+
+                deleteButton.textContent = "Delete";
+                deleteButton.className   = "btn";
+                deleteButton.style.background = "var(--red-dark)";
+                deleteButton.onclick = function() { handleDeleteClick(student.studentID); };
+
+                actionsCell.appendChild(editButton);
+                actionsCell.appendChild(deleteButton);
+                row.appendChild(actionsCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        function handleEditClick(studentID) {
+            const student = registeredStudents.find(function(s) { return s.studentID === studentID; });
+            if (!student) return;
+
+            document.getElementById("studentfName").value = student.studentfName;
+            document.getElementById("studentlName").value = student.studentlName;
+            document.getElementById("studentAge").value   = student.studentAge;
+            document.getElementById("studentID").value    = student.studentID;
+            document.getElementById("studentClass").value = student.studentClass;
+            document.getElementById("Term").value         = student.Term;
+            document.getElementById("studentID").readOnly = true;
+
+            editingStudentID           = studentID;
+            formHeading.textContent    = "Edit Student — " + studentID;
+            submitBtn.textContent      = "Update Student";
+            cancelEditBtn.hidden       = false;
+            successMessage.textContent = "";
+            registerForm.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function handleDeleteClick(studentID) {
+            const student = registeredStudents.find(function(s) { return s.studentID === studentID; });
+            if (!confirm("Delete student " + student.studentfName + " " + student.studentlName + "? This cannot be undone.")) return;
+
+            const index = registeredStudents.findIndex(function(s) { return s.studentID === studentID; });
+            if (index !== -1) {
+                registeredStudents.splice(index, 1);
+                localStorage.setItem("registeredStudents", JSON.stringify(registeredStudents));
+                displayStudents();
+                if (editingStudentID === studentID) resetForm();
+            }
+        }
+
+        function resetForm() {
+            registerForm.reset();
+            document.getElementById("studentID").readOnly = false;
+            editingStudentID           = null;
+            formHeading.textContent    = "Register New Student";
+            submitBtn.textContent      = "Register Student";
+            cancelEditBtn.hidden       = true;
+            successMessage.textContent = "";
+        }
+
+        registerForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const studentfName = document.getElementById("studentfName").value.trim();
+            const studentlName = document.getElementById("studentlName").value.trim();
+            const studentAge   = document.getElementById("studentAge").value;
+            const studentID    = document.getElementById("studentID").value.trim();
+            const studentClass = document.getElementById("studentClass").value;
+            const Term         = document.getElementById("Term").value;
+
+            if (!studentfName || !studentlName || !studentAge || !studentID) {
+                alert("Please fill in all fields.");
+                return;
+            }
+            if (Number(studentAge) < 1) {
+                alert("Age must be a positive number.");
+                return;
+            }
+
+            if (editingStudentID !== null) {
+                const index = registeredStudents.findIndex(function(s) { return s.studentID === editingStudentID; });
+                if (index !== -1) {
+                    registeredStudents[index] = { studentfName, studentlName, studentAge, studentID: editingStudentID, studentClass, Term };
+                    localStorage.setItem("registeredStudents", JSON.stringify(registeredStudents));
+                    successMessage.textContent = "Student updated successfully!";
+                    displayStudents();
+                    resetForm();
+                }
+                return;
+            }
+
+            if (registeredStudents.some(function(s) { return s.studentID === studentID; })) {
+                alert("This Student ID is already registered!");
+                return;
+            }
+
+            registeredStudents.push({ studentfName, studentlName, studentAge, studentID, studentClass, Term });
+            localStorage.setItem("registeredStudents", JSON.stringify(registeredStudents));
+            successMessage.textContent = "Student registered successfully!";
+            displayStudents();
+            registerForm.reset();
+        });
+
+        cancelEditBtn.addEventListener("click", resetForm);
+        document.getElementById("filterTerm").addEventListener("change", displayStudents);
+
+        displayStudents();
+    </script>
+</body>
+</html>

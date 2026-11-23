@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instructor Workflow - CIT2011</title>
-    <link rel="stylesheet" href="instructor.css">
+    <link rel="stylesheet" href="../style/main.css">
 </head>
 <body>
 
-    <header>
-        <h1>Instructor Dashboard</h1>
-        <p>Welcome, Instructor. Manage your subjects and grades below.</p>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="school-name">
+                Herbert Morrison Technical High School
+                <span>Instructor Dashboard</span>
+            </div>
+            <nav class="site-nav">
+                <a href="login.html">Logout</a>
+            </nav>
+        </div>
     </header>
 
     <main>
@@ -19,9 +26,12 @@
             <label for="subjectFilter">Select Subject:</label>
             <select id="subjectFilter">
                 <option value="">-- Choose a Subject --</option>
-                <option value="web-dev">Web Programming (CIT2011)</option>
-                <option value="db-sys">Database Design (CMP2018)</option>
-                <option value="oop">Object-Oriented Programming (CIT2004)</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="science">Science</option>
+                <option value="english">English</option>
+                <option value="information-technology">Information Technology</option>
+                <option value="physical-education">Physical Education</option>
+                <option value="social-studies">Social Studies</option>
             </select>
         </section>
 
@@ -65,6 +75,6 @@
         </section>
     </main>
 
-    <script src="instructor.js"></script>
+    <script src="../js/Herbert-Morrison-StJames-Instructor.js"></script>
 </body>
 </html>

@@ -24,21 +24,10 @@ const STORAGE = {
     },
 
     remove:function(storageKey){
-        //used for log out
+        sessionStorage.removeItem(storageKey);
     }
 };
 
-
-//Database
-function createUser(id, email, password, role, status = "active"){
-    return {
-        id: id,
-        email: email,
-        password: password,
-        role: role,
-        status: status,
-    };//Can add that when user is created to adds to arr
-}
 
 function findByEmail(email) {
     const arr = STORAGE.get();
@@ -72,7 +61,6 @@ function checkPassword(user, login) {
     if (user.email !== login.email || user.password !== login.password) {
         throw new Error("Invalid email or password");
     }
-    //Possible return user;
 }
 
 function checkStatus(user) {
@@ -81,9 +69,11 @@ function checkStatus(user) {
 
 function checkRole(user){
     if(user.role === "admin"){
-        console.warn("weeeeeee");
+        // admin access granted
     }else if (user.role === "teacher"){
-
+        // teacher access granted
+    }else if (user.role === "reviewer"){
+        // reviewer access granted
     }else{
         throw new Error("Invalid Role. Contact your administrator.")
     }
@@ -102,7 +92,6 @@ function login(email, password) {
 
         outElement.innerHTML = `Welcome back`;
         errorElement.innerHTML = '';
-        console.log(user);
 
     } catch (error) {
         outElement.innerHTML = 'Not logged in.';
