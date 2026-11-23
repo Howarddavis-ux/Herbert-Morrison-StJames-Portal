@@ -1,10 +1,17 @@
+<!--
+    Group Members (Monday 3pm - 5pm):
+    Howard Davis     - 2501971
+    Abigail Williams - 2404730
+    Jason Reid       - 2509405
+    Alyesha Hayles   - 2507383
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reviewer Portal | Herbert Morrison Technical High School</title>
-    <link rel="stylesheet" href="../style/main.css">
+    <link rel="stylesheet" href="../style/Herbert-Morrison-StJames-Main.css">
 </head>
 <body>
 
@@ -15,8 +22,8 @@
                 <span>Reviewer Portal</span>
             </div>
             <nav class="site-nav">
-                <a href="Academicrecords.html">Academic Records</a>
-                <a href="report.html">Financial Ledger</a>
+                <a href="Herbert-Morrison-StJames-AcademicRecords.html">Academic Records</a>
+                <a href="Herbert-Morrison-StJames-Report.html">Financial Ledger</a>
                 <a href="#" id="logoutLink">Logout</a>
             </nav>
         </div>
@@ -35,12 +42,12 @@
                 <div class="card">
                     <h3>Academic Records</h3>
                     <p>View all student grades across every subject as submitted by teachers.</p>
-                    <a href="Academicrecords.html" class="btn">View</a>
+                    <a href="Herbert-Morrison-StJames-AcademicRecords.html" class="btn">View</a>
                 </div>
                 <div class="card">
                     <h3>Financial Ledger</h3>
                     <p>View student tuition balances, payment statuses, and transaction statements.</p>
-                    <a href="report.html" class="btn">View</a>
+                    <a href="Herbert-Morrison-StJames-Report.html" class="btn">View</a>
                 </div>
             </div>
         </section>
@@ -53,13 +60,13 @@
     <script>
         var stored = sessionStorage.getItem('CurrentUser');
         if (!stored) {
-            window.location.href = 'login.html';
+            window.location.href = 'Herbert-Morrison-StJames-Login.html';
         }
 
         document.getElementById('logoutLink').addEventListener('click', function(e) {
             e.preventDefault();
             sessionStorage.removeItem('CurrentUser');
-            window.location.href = 'login.html';
+            window.location.href = 'Herbert-Morrison-StJames-Login.html';
         });
     </script>
 

@@ -1,3 +1,10 @@
+/*
+    Group Members (Monday 3pm - 5pm):
+    Howard Davis     - 2501971
+    Abigail Williams - 2404730
+    Jason Reid       - 2509405
+    Alyesha Hayles   - 2507383
+*/
 const STORAGE_K = 'testLogins';
 
 const STORAGEDB = {

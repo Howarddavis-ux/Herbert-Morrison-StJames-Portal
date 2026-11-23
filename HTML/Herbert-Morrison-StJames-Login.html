@@ -1,10 +1,17 @@
+<!--
+    Group Members:
+    Howard Davis    - 2501971 - Monday 3pm-5pm
+    Abigail Williams - 2404730 - Monday 3pm-5pm
+    Jason Reid      - 2509405 - Monday 3pm-5pm
+    Alyesha Hayles  - 2507383 - Monday 3pm-5pm
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Herbert Morrison Technical High School</title>
-    <link rel="stylesheet" href="../style/main.css">
+    <link rel="stylesheet" href="../style/Herbert-Morrison-StJames-Main.css">
 </head>
 <body>
 
@@ -16,9 +23,9 @@
             </div>
             <nav class="site-nav">
                 <a href="../index.html">Home</a>
-                <a href="about.html">About Us</a>
-                <a href="contact.html">Contact Us</a>
-                <a href="login.html">Login</a>
+                <a href="Herbert-Morrison-StJames-About.html">About Us</a>
+                <a href="Herbert-Morrison-StJames-Contact.html">Contact Us</a>
+                <a href="Herbert-Morrison-StJames-Login.html">Login</a>
             </nav>
         </div>
     </header>
@@ -69,11 +76,11 @@
                     if (!stored) return;
                     var user = JSON.parse(stored);
                     if (user && user.role === 'admin') {
-                        window.location.href = 'StudentRegistration.html';
+                        window.location.href = 'Herbert-Morrison-StJames-StudentRegistration.html';
                     } else if (user && user.role === 'teacher') {
-                        window.location.href = 'instructor.html';
+                        window.location.href = 'Herbert-Morrison-StJames-Instructor.html';
                     } else if (user && user.role === 'reviewer') {
-                        window.location.href = 'reviewer.html';
+                        window.location.href = 'Herbert-Morrison-StJames-Reviewer.html';
                     }
                 } catch (err) {}
             }, 200);

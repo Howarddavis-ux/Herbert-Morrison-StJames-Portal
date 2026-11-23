@@ -1,7 +1,14 @@
+/*
+    Group Members (Monday 3pm - 5pm):
+    Howard Davis     - 2501971
+    Abigail Williams - 2404730
+    Jason Reid       - 2509405
+    Alyesha Hayles   - 2507383
+*/
 const TRANSACTION_KEY  = "transactions";
 const LEDGER_KEY       = "ledger";
 const CURRENT_USER_KEY = "CurrentUser";
-const LOGIN_PAGE       = "login.html";
+const LOGIN_PAGE       = "Herbert-Morrison-StJames-Login.html";
 const DEFAULT_TUITION  = 150000;
 
 const STORAGE = {
@@ -288,7 +295,7 @@ if (!currentUser) {
         document.getElementById("paymentSection").classList.remove("hidden");
         fillPayment(records);
     } else {
-        var srLink = document.querySelector('a[href="StudentRegistration.html"]');
+        var srLink = document.querySelector('a[href="Herbert-Morrison-StJames-StudentRegistration.html"]');
         if (srLink) srLink.style.display = 'none';
     }
     generateTable();

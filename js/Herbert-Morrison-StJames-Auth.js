@@ -1,4 +1,10 @@
-//Howard Davis, 2501971, auth.j
+/*
+    Group Members:
+    Howard Davis    - 2501971 - Monday 3pm-5pm
+    Abigail Williams - 2404730 - Monday 3pm-5pm
+    Jason Reid      - 2509405 - Monday 3pm-5pm
+    Alyesha Hayles  - 2507383 - Monday 3pm-5pm
+*/
 //Storage
 const STORAGE_KEY = 'testLogins';
 const STORAGE = {

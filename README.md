@@ -21,25 +21,25 @@
 ### index.html â€” Home
 Landing page for the portal. Contains a brief school description and links to the About, Contact, and Login pages via nav and cards.
 
-### HTML/about.html â€” About Us
+### HTML/Herbert-Morrison-StJames-About.html â€” About Us
 Displays the school's history, landmark accomplishments, and a full teacher directory table with departments and subjects.
 
-### HTML/contact.html â€” Contact Us
+### HTML/Herbert-Morrison-StJames-Contact.html â€” Contact Us
 Shows school contact information (address, phone, email, hours) and a validated contact form. All fields are validated client-side using HTML5 constraints. No data is submitted to a server.
 
-### HTML/login.html â€” Staff Login
+### HTML/Herbert-Morrison-StJames-Login.html â€” Staff Login
 Login form for administrators and teachers. Credentials are checked against accounts stored in sessionStorage. On success, admins are redirected to Student Registration and teachers are redirected to the Instructor Dashboard.
 
-### HTML/StudentRegistration.html â€” Student Registration (Admin only)
+### HTML/Herbert-Morrison-StJames-StudentRegistration.html â€” Student Registration (Admin only)
 Allows the admin to register, edit, and delete students. Student records are saved to localStorage under the key registeredStudents. All other pages (grades, ledger) read from this same key.
 
-### HTML/instructor.html â€” Instructor Dashboard (Teacher only)
+### HTML/Herbert-Morrison-StJames-Instructor.html â€” Instructor Dashboard (Teacher only)
 The teacher selects a subject from the dropdown and enters assignment, midterm, and final exam scores for each registered student. Grades are auto-calculated and saved to localStorage under grades_subject. Class metrics (average, highest grade, pass rate) update in real time.
 
-### HTML/Academicrecords.html â€” Academic Records (Admin only)
+### HTML/Herbert-Morrison-StJames-AcademicRecords.html â€” Academic Records (Admin only)
 Displays all grades submitted by teachers across every subject. The admin can edit or delete individual grade entries. Data is read directly from the same grades_subject keys the instructor writes to.
 
-### HTML/report.html â€” Financial Ledger (Admin only)
+### HTML/Herbert-Morrison-StJames-Report.html â€” Financial Ledger (Admin only)
 Shows each registered student's tuition, amount paid, balance, and payment status (Paid / Pending / Outstanding). The default tuition per student is J$150,000. Admins can record payments, search and filter the ledger, view a per-student transaction statement, and print. Ledger data is stored under localStorage keys ledger and transactions.
 
 ---
@@ -49,9 +49,9 @@ Shows each registered student's tuition, amount paid, balance, and payment statu
 | Key | Storage Type | Written by | Read by |
 |-----|-------------|------------|---------|
 | testLogins | sessionStorage | DB.js | Auth.js |
-| CurrentUser | sessionStorage | Auth.js | Ledger.js, login.html |
-| registeredStudents | localStorage | StudentRegistration.html | Herbert-Morrison-StJames-Instructor.js, Academicrecords.html, Ledger.js |
-| grades_subject | localStorage | Herbert-Morrison-StJames-Instructor.js | Academicrecords.html |
+| CurrentUser | sessionStorage | Auth.js | Ledger.js, Herbert-Morrison-StJames-Login.html |
+| registeredStudents | localStorage | Herbert-Morrison-StJames-StudentRegistration.html | Herbert-Morrison-StJames-Instructor.js, Herbert-Morrison-StJames-AcademicRecords.html, Ledger.js |
+| grades_subject | localStorage | Herbert-Morrison-StJames-Instructor.js | Herbert-Morrison-StJames-AcademicRecords.html |
 | ledger | localStorage | Ledger.js | Ledger.js |
 | transactions | localStorage | Ledger.js | Ledger.js |
 
@@ -61,4 +61,4 @@ Shows each registered student's tuition, amount paid, balance, and payment statu
 
 - Vanilla HTML5, CSS3, JavaScript - no frameworks or libraries
 - localStorage and sessionStorage for all data persistence
-- Single master stylesheet: style/main.css
+- Single master stylesheet: style/Herbert-Morrison-StJames-Main.css
