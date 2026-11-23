@@ -80,6 +80,7 @@ function checkRole(user){
 }
 
 function login(email, password) {
+    sessionStorage.removeItem('CurrentUser');
     let login = {
         email: email,
         password: password,
