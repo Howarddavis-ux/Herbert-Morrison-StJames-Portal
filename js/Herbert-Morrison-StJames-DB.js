@@ -5,8 +5,11 @@
     Jason Reid       - 2509405
     Alyesha Hayles   - 2507383
 */
+
+// Key under which user accounts are stored in sessionStorage
 const STORAGE_K = 'testLogins';
 
+// Wrapper for writing to sessionStorage
 const STORAGEDB = {
     store: function(storageKey, value) {
         try {
@@ -17,6 +20,7 @@ const STORAGEDB = {
     },
 };
 
+// Returns a user account object
 function createUser(id, email, password, role, status = "active") {
     return {
         id: id,
@@ -27,6 +31,7 @@ function createUser(id, email, password, role, status = "active") {
     };
 }
 
+// Seeds the three test accounts into sessionStorage on page load
 function initTestStorage() {
     const testUsers = [
         createUser(1, "admin@herbertmorrison.edu.jm",    "admin123",    "admin"),
