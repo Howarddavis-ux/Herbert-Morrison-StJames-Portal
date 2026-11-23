@@ -40,15 +40,6 @@ function createUser(id, email, password, role, status = "active"){
     };//Can add that when user is created to adds to arr
 }
 
-function initTestStorage(){
-    const testUser = [
-        createUser(1, "admin@example.com", "admin123", "admin"),
-        createUser(2, "teacher@example.com", "teacher123", "teacher"),
-        createUser(3, "inactive@example.com", "inactive123", "user", "inactive"),
-    ];
-    STORAGE.store(STORAGE_KEY, testUser);
-}
-
 function findByEmail(email) {
     const arr = STORAGE.get();
     if (!arr) return null;
@@ -57,8 +48,6 @@ function findByEmail(email) {
 
 
 //Authenitcation
-initTestStorage(); 
-
 const errorElement = document.getElementById('error');
 const outElement = document.getElementById('out');
 const emailElement = document.getElementById('email');

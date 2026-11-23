@@ -5,9 +5,9 @@ const CURRENT_USER_KEY = "CurrentUser";
 
 //Storage
 const STORAGE = {
-    get:function(){
+    get:function(storageKey){
         try{
-            const json = localStorage.getItem(STORAGE_KEY);
+            const json = localStorage.getItem(storageKey);
             if (!json) return [];
 
             const arr = JSON.parse(json);
@@ -27,21 +27,6 @@ const STORAGE = {
     }
 };
 
-/*
-Student:
-id
-First and Last Name
-Age 
-Grade 
-Term
-
-Ledger:
-studentId
-tuition
-amountPaid
-balance
-*/
-
 //Database
 function createStudent(id, firstName, lastName, age, grade, term = "summer"){
     return {
@@ -60,7 +45,15 @@ function createLedger(studentId, tuition, amountPaid){
         amountPaid: amountPaid,
     };
 }
-
+function createUser(id, email, password, role, status = "active"){
+    return {
+        id: id,
+        email: email,
+        password: password,
+        role: role,
+        status: status,
+    };//Can add that when user is created to adds to arr
+}
 function initTestStorage() {
     const testStudents = [
         createStudent(101, "Maya", "Campbell", 14, 9, "summer"),
@@ -73,9 +66,13 @@ function initTestStorage() {
         createLedger(102, 1800, 900),
         createLedger(103, 1400, 500),
     ];
+    const CURRENT_USER = [ createUser(1, "admin@example.com", "admin123", "admin")];
     STORAGE.store(STUDENT_KEY, testStudents);
     STORAGE.store(LEDGER_KEY, testLedgers);
+    STORAGE.store(CURRENT_USER_KEY, CURRENT_USER);
 }
+
+initTestStorage();
 
 //Finance
 function getStatus(entry){
@@ -97,7 +94,7 @@ function getLedgerRecords(){
     const concatArr = [];
 
     for(let i = 0; i < students.length; i++){
-        const student = student[i];
+        const student = students[i];
         const entry = ledger.find(en => en.studentId === student.id);
 
         concatArr.push({
@@ -145,9 +142,10 @@ function getLedgerStats(records){
     }
     return totals;
 }
+
 function checkPayment(studentId, amount){
     const arr  = STORAGE.get(LEDGER_KEY);
-    const entry =  arr.find(entry => entry.studenId === studentId);
+    const entry =  arr.find(entry => entry.studentId === studentId);
 
     if(!entry){
         return "Choose a student.";
@@ -164,7 +162,7 @@ function checkPayment(studentId, amount){
 
 function recordPayment(studentId, amount, note){
     const currentUser = STORAGE.get(CURRENT_USER_KEY);
-    if (!currentUser || currentUser.role !== "admin"){
+    if (!currentUser || currentUser[0].role !== "admin"){
         throw new Error("Only administrators");
     }
 
@@ -193,4 +191,171 @@ function recordPayment(studentId, amount, note){
         note: note.trim()
     });
     STORAGE.store(TRANSACTION_KEY, transactions);
+}
+
+
+
+//Display
+const currentUser = STORAGE.get(CURRENT_USER_KEY);
+
+const ledgerBody = document.getElementById("ledgerBody");
+const searchText = document.getElementById("searchText");
+const filterStatus = document.getElementById("filterStatus");
+const filterGrade = document.getElementById("filterGrade");
+const paymentStudent = document.getElementById("paymentStudent");
+
+function formatMoney(amount) {
+    return "J$" + amount;
+}
+
+function search(records, filters) {
+    const text = filters.text.trim().toLowerCase();
+    const results = [];
+
+    for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+        const matchesText = text === "" || String(record.studentId) === text;
+        const matchesStatus = filters.status === "" || record.status === filters.status;
+        const matchesGrade = filters.grade === "" || record.grade === filters.grade;
+
+        if (matchesText && matchesStatus && matchesGrade) {
+            results.push(record);
+        }
+    }
+    return results;
+}
+
+function fillGradeFilter(records) {
+    const grade = [];
+    for (let i = 0; i < records.length; i++) {
+        if (grade.indexOf(records[i].grade) === -1) {
+            grade.push(records[i].grade);
+        }
+    }
+    grade.sort();
+
+    filterGrade.innerHTML = '<option value="">All grade</option>';
+    for (let i = 0; i < grade.length; i++) {
+        filterGrade.innerHTML += `<option value="${grade[i]}">${grade[i]}</option>`;
+    }
+}
+
+function fillPayment(records) {
+    paymentStudent.innerHTML = "";
+    for (let i = 0; i < records.length; i++) {
+        const r = records[i];
+        paymentStudent.innerHTML += `<option value="${r.studentId}">${r.studentId} - ${r.name} (owes ${formatMoney(r.balance)})</option>`;
+    }
+}
+
+function generateTable() {
+    const filtered = search(getLedgerRecords(), {
+        text: searchText.value,
+        status: filterStatus.value,
+        grade: filterGrade.value
+    });
+
+    const totals = getLedgerStats(filtered);
+    document.getElementById("totalTuition").innerHTML = formatMoney(totals.tuition);
+    document.getElementById("totalCollected").innerHTML = formatMoney(totals.collected);
+    document.getElementById("totalOwing").innerHTML = formatMoney(totals.owing);
+    document.getElementById("statusCounts").innerHTML = totals.paidCount + " / " + totals.pendingCount + " / " + totals.outstandingCount;
+
+    ledgerBody.innerHTML = "";
+    for (let i = 0; i < filtered.length; i++) {
+        const record = filtered[i];
+        ledgerBody.innerHTML += `
+            <tr>
+                <td>${record.studentId}</td>
+                <td>${record.name}</td>
+                <td>${record.grade}</td>
+                <td>${formatMoney(record.tuition)}</td>
+                <td>${formatMoney(record.amountPaid)}</td>
+                <td>${formatMoney(record.balance)}</td>
+                <td><span class="badge status-${record.status}">${record.status}</span></td>
+                <td class="no-print"><button type="button" onclick="showStatement(${record.studentId})">View</button></td>
+            </tr>
+        `;
+    }
+
+    document.getElementById("noResults").classList.toggle("hidden", filtered.length > 0);
+}
+
+function showStatement(studentId) {
+    const records = getLedgerRecords();
+    let record = null;
+
+    for (let i = 0; i < records.length; i++) {
+        if (records[i].studentId === studentId) {
+            record = records[i];
+            break;
+        }
+    }
+
+    const transactions = getTransactionsForStudent(studentId);
+    const body = document.getElementById("statementBody");
+    body.innerHTML = "";
+
+    document.getElementById("statementTitle").innerHTML = `Statement: ${record.name} (ID ${record.studentId})`;
+    document.getElementById("statementSummary").innerHTML =
+        `Tuition ${formatMoney(record.tuition)} | Paid ${formatMoney(record.amountPaid)} | Balance ${formatMoney(record.balance)} | Status: ${record.status}`;
+
+    for (let i = 0; i < transactions.length; i++) {
+        const t = transactions[i];
+        body.innerHTML += `
+            <tr>
+                <td>${formatMoney(t.amount)}</td>
+                <td>${t.note}</td>
+            </tr>
+        `;
+    }
+
+    document.getElementById("statementEmpty").classList.toggle("hidden", transactions.length > 0);
+    document.getElementById("statementSection").classList.remove("hidden");
+}
+
+function recordNewPayment() {
+    const message = document.getElementById("paymentMessage");
+    const amountInput = document.getElementById("paymentAmount");
+    const noteInput = document.getElementById("paymentNote");
+
+    try {
+        recordPayment(Number(paymentStudent.value), parseFloat(amountInput.value), noteInput.value);
+        message.innerHTML = "Payment recorded.";
+        message.className = "message success";
+        amountInput.value = "";
+        noteInput.value = "";
+        fillPayment(getLedgerRecords());
+        generateTable();
+    } catch (error) {
+        message.innerHTML = error.message;
+        message.className = "message error";
+    }
+}
+
+function handleLogout() {
+    logout();
+    window.location.href = LOGIN_PAGE;
+}
+
+
+searchText.addEventListener("input", generateTable);//change while typing
+filterStatus.addEventListener("change", generateTable);
+filterGrade.addEventListener("change", generateTable);
+
+document.getElementById("paymentButton").addEventListener("click", recordNewPayment);
+document.getElementById("logoutButton").addEventListener("click", handleLogout);
+
+window.addEventListener("afterprint", function () {
+    document.body.classList.remove("print-statement");
+});
+
+if (currentUser) {
+    const records = getLedgerRecords();
+    fillGradeFilter(records);
+    if (currentUser[0].role === "admin") {
+        document.getElementById("paymentSection").classList.remove("hidden");
+        fillPayment(records);
+    }
+    generateTable();
 }
